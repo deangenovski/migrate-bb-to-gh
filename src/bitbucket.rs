@@ -113,6 +113,18 @@ impl BitbucketApi {
         Ok(res.values)
     }
 
+    pub async fn get_multiple_project_repositories(
+        &self,
+        project_keys: &[&str],
+    ) -> Result<Vec<Repository>, anyhow::Error> {
+        let mut all_repositories = Vec::new();
+        for project_key in project_keys {
+            let repositories = self.get_project_repositories(project_key).await?;
+            all_repositories.extend(repositories);
+        }
+        Ok(all_repositories)
+    }
+
     pub async fn get_repository_branches(
         &self,
         full_repo_name: &str,

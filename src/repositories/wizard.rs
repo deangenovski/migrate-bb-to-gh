@@ -44,8 +44,8 @@ impl Wizard {
 
     pub async fn run(&self) -> Result<WizardResult, anyhow::Error> {
         println!("Welcome to Bitbucket-GitHub Migration Wizard!");
-        let project = self.select_project().await?;
-        let bb_repos = self.select_repositories(&project).await?;
+        let projects = self.select_projects().await?;
+        let bb_repos = self.select_repositories(&projects).await?;
 
         let mut actions = vec![];
 
@@ -80,7 +80,7 @@ impl Wizard {
         teams.iter().for_each(|t| println!("  - {}", t.name));
 
         if let Some(new_team) = self
-            .ask_create_team(&project.name, &repositories_names, &teams)
+            .ask_create_team(&projects[0].name, &repositories_names, &teams)
             .await?
         {
             actions.extend(new_team);
@@ -283,7 +283,7 @@ impl Wizard {
         repositories: &[BitbucketRepository],
         already_migrated: &[&String],
     ) -> anyhow::Result<Vec<BitbucketRepository>> {
-        let repositories: Vec<BitbucketRepository> = if !already_migrated.is_empty() {
+        let repositories: Vec<BitbucketRepository> = if !already_migrated.isEmpty() {
             let intersection_names = already_migrated
                 .iter()
                 .map(|n| n.as_str())
@@ -381,21 +381,20 @@ impl Wizard {
 
     async fn select_repositories(
         &self,
-        project: &bitbucket::Project,
+        projects: &[bitbucket::Project],
     ) -> Result<Vec<BitbucketRepository>, anyhow::Error> {
-        let spinner =
-            spinner::create_spinner(format!("Fetching repositories from {} project", project));
+        let spinner = spinner::create_spinner("Fetching repositories from selected projects");
+        let project_keys: Vec<&str> = projects.iter().map(|p| p.get_key()).collect();
         let repositories = self
             .bitbucket
-            .get_project_repositories(project.get_key())
+            .get_multiple_project_repositories(&project_keys)
             .await?;
         spinner.finish_with_message(format!(
-            "Fetched {} repositories from {} project!",
-            repositories.len(),
-            project
+            "Fetched {} repositories from selected projects!",
+            repositories.len()
         ));
         let repositories =
-            MultiSelect::with_prompt(format!("Select repositories from {} project", project))
+            MultiSelect::with_prompt("Select repositories from the selected projects")
                 .items(&repositories)
                 .interact()?;
         if repositories.is_empty() {
@@ -407,17 +406,19 @@ impl Wizard {
         Ok(repositories)
     }
 
-    async fn select_project(&self) -> Result<bitbucket::Project, anyhow::Error> {
+    async fn select_projects(&self) -> Result<Vec<bitbucket::Project>, anyhow::Error> {
         let spinner = spinner::create_spinner("Fetching projects from Bitbucket...");
         let projects = self.bitbucket.get_projects().await?;
         spinner.finish_with_message("Fetched!");
-        let project = FuzzySelect::with_prompt("Select project")
+        let projects = MultiSelect::with_prompt("Select projects")
             .items(&projects)
             .default(0)
-            .interact()
-            .expect("at least 1 project must be selected");
+            .interact()?;
+        if projects.is_empty() {
+            return Err(anyhow!("At least one project must be selected"));
+        }
 
-        Ok(project.clone())
+        Ok(projects.into_iter().cloned().collect())
     }
 
     fn save_migration_file(&self, migration: &Migration) -> Result<(), anyhow::Error> {
