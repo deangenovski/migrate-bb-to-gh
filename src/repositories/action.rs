@@ -46,6 +46,10 @@ pub enum Action {
         repository_name: String,
         branch: String,
     },
+    SetRepositoryTopics {
+        repository_name: String,
+        topics: Vec<String>,
+    },
 }
 
 impl Action {
@@ -118,6 +122,20 @@ impl Action {
                 format!(
                     "Set default branch of '{}' repository to '{}'",
                     repository_name, branch
+                )
+            }
+            Action::SetRepositoryTopics {
+                repository_name,
+                topics,
+            } => {
+                let topics_list = topics
+                    .iter()
+                    .map(|t| format!("  - {}", t))
+                    .collect::<Vec<_>>()
+                    .join("\n");
+                format!(
+                    "Set topics for '{}' repository:\n{}",
+                    repository_name, topics_list
                 )
             }
         }

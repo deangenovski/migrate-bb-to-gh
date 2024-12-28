@@ -49,6 +49,10 @@ impl Repository {
         }
         None
     }
+
+    pub fn get_project_name(&self) -> String {
+        self.full_name.split('/').next().unwrap_or("").to_string()
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -81,7 +85,7 @@ impl Display for Branch {
     }
 }
 
-pub(crate) struct BitbucketApi {
+pub struct BitbucketApi {
     config: BitbucketConfig,
 }
 

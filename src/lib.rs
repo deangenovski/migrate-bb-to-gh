@@ -1,7 +1,7 @@
 mod api;
-mod bitbucket;
+pub mod bitbucket;
 pub mod config;
-mod github;
+pub mod github;
 pub mod prompts;
 pub mod repositories;
 mod spinner;

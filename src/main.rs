@@ -5,6 +5,8 @@ use clap::{CommandFactory, Parser, Subcommand};
 use migrate_bb_to_gh::circleci;
 use migrate_bb_to_gh::config;
 use migrate_bb_to_gh::repositories::{self, Migrator, Wizard};
+pub use migrate_bb_to_gh::bitbucket::BitbucketApi;
+pub use migrate_bb_to_gh::github::GithubApi;
 
 /// Utility tool for migration of repositories from Bitbucket to GitHub for organizations
 #[derive(Parser)]
@@ -93,8 +95,27 @@ async fn main() -> Result<(), anyhow::Error> {
             );
         }
         Commands::Migrate { migration_file } => {
-            let migrator = Migrator::new(migration_file, version, config);
+            let migrator = Migrator::new(migration_file, version, config.clone());
             let _ = migrator.migrate().await?;
+
+            // Set topics for GitHub repositories based on Bitbucket project names
+            let bitbucket_api = BitbucketApi::new(&config.bitbucket);
+            let github_api = GithubApi::new(&config.github);
+
+            let projects = bitbucket_api.get_projects().await?;
+            for project in projects {
+                let repositories = bitbucket_api.get_project_repositories(&project.key).await?;
+                for repository in repositories {
+                    let project_name = repository.get_project_name();
+                    github_api
+                        .set_repository_topics(
+                            &config.github.organization_name,
+                            &repository.name,
+                            vec![project_name],
+                        )
+                        .await?;
+                }
+            }
         }
         #[cfg(feature = "circleci")]
         Commands::CircleCi { command } => match &command {
