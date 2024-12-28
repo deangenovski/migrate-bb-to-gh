@@ -130,7 +130,7 @@ impl Wizard {
                     .position(|b| b.name == repo.main_branch.name);
                 let default_idx = branches.iter().position(|b| b.name == "development");
 
-                let default_idx = match (default_idx, current_idx) {
+                let _default_idx = match (default_idx, current_idx) {
                     (Some(idx), _) => idx,
                     (_, Some(idx)) => idx,
                     _ => 0,
@@ -141,7 +141,7 @@ impl Wizard {
                     repo.full_name
                 ))
                 .items(&branches)
-                .default(0)
+                .default(_default_idx)
                 .interact()?;
                 let action = Action::SetRepositoryDefaultBranch {
                     repository_name: repo.full_name.clone(),
@@ -412,7 +412,6 @@ impl Wizard {
         spinner.finish_with_message("Fetched!");
         let projects = MultiSelect::with_prompt("Select projects")
             .items(&projects)
-            .default(0)
             .interact()?;
         if projects.is_empty() {
             return Err(anyhow!("At least one project must be selected"));
