@@ -85,7 +85,7 @@ impl Display for Branch {
     }
 }
 
-pub(crate) struct BitbucketApi {
+pub struct BitbucketApi {
     config: BitbucketConfig,
 }
 
