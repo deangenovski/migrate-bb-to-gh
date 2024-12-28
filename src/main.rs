@@ -5,8 +5,8 @@ use clap::{CommandFactory, Parser, Subcommand};
 use migrate_bb_to_gh::circleci;
 use migrate_bb_to_gh::config;
 use migrate_bb_to_gh::repositories::{self, Migrator, Wizard};
-use migrate_bb_to_gh::bitbucket::BitbucketApi;
-use migrate_bb_to_gh::github::GithubApi;
+pub use migrate_bb_to_gh::bitbucket::BitbucketApi;
+pub use migrate_bb_to_gh::github::GithubApi;
 
 /// Utility tool for migration of repositories from Bitbucket to GitHub for organizations
 #[derive(Parser)]
