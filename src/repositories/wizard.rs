@@ -283,7 +283,7 @@ impl Wizard {
         repositories: &[BitbucketRepository],
         already_migrated: &[&String],
     ) -> anyhow::Result<Vec<BitbucketRepository>> {
-        let repositories: Vec<BitbucketRepository> = if !already_migrated.isEmpty() {
+        let repositories: Vec<BitbucketRepository> = if !already_migrated.is_empty() {
             let intersection_names = already_migrated
                 .iter()
                 .map(|n| n.as_str())
