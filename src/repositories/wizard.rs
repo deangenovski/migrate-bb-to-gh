@@ -141,7 +141,7 @@ impl Wizard {
                     repo.full_name
                 ))
                 .items(&branches)
-                .default(default_idx)
+                .default(0)
                 .interact()?;
                 let action = Action::SetRepositoryDefaultBranch {
                     repository_name: repo.full_name.clone(),
