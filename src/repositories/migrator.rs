@@ -358,6 +358,10 @@ impl Migrator {
                 repository_name,
                 branch,
             } => self.set_default_branch(repository_name, branch).await?,
+            Action::SetRepositoryTopics {
+                repository_name,
+                topics,
+            } => self.set_repository_topics(&self.github.config.organization_name, repository_name, topics.clone()).await?,
         }
         Ok(())
     }

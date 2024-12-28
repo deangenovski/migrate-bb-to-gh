@@ -95,7 +95,7 @@ async fn main() -> Result<(), anyhow::Error> {
             );
         }
         Commands::Migrate { migration_file } => {
-            let migrator = Migrator::new(migration_file, version, config);
+            let migrator = Migrator::new(migration_file, version, config.clone());
             let _ = migrator.migrate().await?;
 
             // Set topics for GitHub repositories based on Bitbucket project names

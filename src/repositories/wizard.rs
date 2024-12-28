@@ -94,9 +94,6 @@ impl Wizard {
             actions.extend(branch_actions);
         }
 
-        let migration = Migration::new(&self.version, &actions);
-        self.save_migration_file(&migration)?;
-
         // Extract the project name from Bitbucket to use as a topic in GitHub
         for repo in &repositories {
             let project_name = repo.get_project_name();
@@ -106,6 +103,9 @@ impl Wizard {
             };
             actions.push(action);
         }
+
+        let migration = Migration::new(&self.version, &actions);
+        self.save_migration_file(&migration)?;
 
         Ok(WizardResult {
             actions,
