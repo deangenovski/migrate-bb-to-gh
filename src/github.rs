@@ -133,6 +133,11 @@ impl Display for Member {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+struct SetRepositoryTopicsBody {
+    names: Vec<String>,
+}
+
 #[derive(Clone)]
 pub struct GithubApi {
     config: GitHubConfig,
@@ -346,6 +351,25 @@ impl GithubApi {
         let body = UpdateTeamMembershipBody {
             role: TeamMemberRole::Member,
         };
+
+        let _: Option<serde_json::Value> = self.put(url, Some(body)).await?;
+
+        Ok(())
+    }
+
+    pub async fn set_repository_topics(
+        &self,
+        owner: &str,
+        repo: &str,
+        topics: Vec<String>,
+    ) -> anyhow::Result<()> {
+        let url = format!(
+            "https://api.github.com/repos/{owner}/{repo}/topics",
+            owner = owner,
+            repo = repo
+        );
+
+        let body = SetRepositoryTopicsBody { names: topics };
 
         let _: Option<serde_json::Value> = self.put(url, Some(body)).await?;
 
