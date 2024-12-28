@@ -85,6 +85,30 @@ impl Migrator {
         Ok(())
     }
 
+    async fn set_repository_topics(
+        &self,
+        owner: &str,
+        repo: &str,
+        topics: Vec<String>,
+    ) -> anyhow::Result<()> {
+        println!(
+            "Setting topics for '{}' repository",
+            repo,
+        );
+        let spinner = spinner::create_spinner(format!(
+            "Setting topics for '{}' repository",
+            repo
+        ));
+        self.github
+            .set_repository_topics(owner, repo, topics)
+            .await?;
+        spinner.finish_with_message(format!(
+            "Set topics for '{}' repository",
+            repo
+        ));
+        Ok(())
+    }
+
     pub async fn migrate(self) -> Result<(), anyhow::Error> {
         let file = File::open(&self.migration_file)?;
         let migration: Migration = serde_json::from_reader(file).with_context(|| format!("Error when parsing {} file.\nIs this a JSON file?\nDoes the version match the program version ({})?\nConsider re-generating the migration file with `wizard` subcommand.", &self.migration_file.display(), &self.version))?;

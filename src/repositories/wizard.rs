@@ -97,6 +97,16 @@ impl Wizard {
         let migration = Migration::new(&self.version, &actions);
         self.save_migration_file(&migration)?;
 
+        // Extract the project name from Bitbucket to use as a topic in GitHub
+        for repo in &repositories {
+            let project_name = repo.get_project_name();
+            let action = Action::SetRepositoryTopics {
+                repository_name: repo.full_name.clone(),
+                topics: vec![project_name],
+            };
+            actions.push(action);
+        }
+
         Ok(WizardResult {
             actions,
             migration_file_path: self.output_path.clone(),
